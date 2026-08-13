@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique
+  email        String        @unique
+  password     String
+  role         Role          @default(User)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  cart         Cart?
+  orders       Order[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  name       String
+  brand      String
+  price      Float
+  imageUrl   String      @map("image_url")
+  desc       String?
+  notes      Json?       @db.JsonB
+  sex        Sex?        @default(Unisex)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int?       @unique @map("user_id")
+  guestId   String?    @unique @map("guest_id")
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  expiresAt DateTime?  @map("expires_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  quantity  Int      @default(1)
+  productId Int      @map("product_id")
+  cartId    Int      @map("cart_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cart_items")
+}
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  totalAmount    Float    @map("total_amount")
+  contact        String
+  isPaid         Boolean  @default(false) @map("is_paid")
+  orderStatus    String   @default("pending") @map("order_status")
+  paymentMethod  String?  @map("payment_method")
+  shippingMethod String?  @map("shipping_method")
+  billingData    Json?    @map("billing_data") @db.JsonB
+  shippingData   Json?    @map("shipping_data") @db.JsonB
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items        OrderItem[]
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([orderStatus])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  productId Int      @map("product_id")
+  orderId   Int      @map("order_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("order_items")
+}
+
+model Transaction {
+  id                String    @id @default(cuid())
+  checkoutRequestID String?   @unique @map("checkout_requestId")
+  mpesaReceipt      String?   @map("mpesa_receipt")
+  phoneNumber       String?   @map("phone_number")
+  amount            Float?
+  status            String    @default("pending") // pending, completed, failed
+  transactionDate   DateTime? @map("transaction_date")
+  orderId           Int       @map("order_id")
+  userId            Int       @map("user_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([checkoutRequestID])
+  @@index([status])
+  @@index([orderId])
+  @@index([userId])
+  @@map("transactions")
+}
+
+enum Role {
+  Admin
+  User
+}
+
+enum Sex {
+  Male
+  Female
+  Unisex
+}
+
+enum OrderStatus {
+  Pending
+  Processing
+  Completed
+  Delivered
+  Cancelled
+}
