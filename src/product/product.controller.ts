@@ -34,6 +34,16 @@ export class ProductController {
     return res.json({ data: { products: result.products } });
   }
 
+  // ⚠️ IMPORTANT: Search route MUST come BEFORE the :id route
+  @Get('search')
+  @Public()
+  async searchProducts(@Query('q') query: string) {
+    if (!query || query.trim().length === 0) {
+      return { data: { products: [] } };
+    }
+    return this.productService.searchProducts(query.trim());
+  }
+
   @Get(':id')
   @Public()
   async fetchProductById(
@@ -42,15 +52,6 @@ export class ProductController {
   ) {
     const result = await this.productService.fetchProductById(productId);
     return res.json({ data: { product: result.product } });
-  }
-
-  @Get('search')
-  async searchProducts(@Query('q') query: string) {
-    if (!query || query.trim().length === 0) {
-      return { data: { products: [] } };
-    }
-
-    return this.productService.searchProducts(query.trim());
   }
 
   @Patch(':id')
