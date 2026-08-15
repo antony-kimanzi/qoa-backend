@@ -105,21 +105,25 @@ export class AuthGuard implements CanActivate {
 
   private setAccessTokenCookie(response: Response, token: string): void {
     response.cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
   }
 
   private setRefreshTokenCookie(response: Response, token: string): void {
     response.cookie('refresh_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
   }
 }

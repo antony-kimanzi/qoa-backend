@@ -28,19 +28,23 @@ export class AuthController {
     const result = await this.authService.register(dto, guestId);
 
     res.cookie('access_token', result.access, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
 
     res.cookie('refresh_token', result.refresh, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
 
     return res.json({
@@ -54,19 +58,23 @@ export class AuthController {
     const result = await this.authService.login(dto);
 
     res.cookie('access_token', result.access, {
+      maxAge: 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
 
     res.cookie('refresh_token', result.refresh, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
       path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
     });
 
     return res.json({
@@ -77,8 +85,24 @@ export class AuthController {
   @Post('logout')
   @Public()
   logout(@Res() res: Response) {
-    res.clearCookie('access_token', { path: '/' });
-    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('access_token', {
+      maxAge: 0, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
+      path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
+    });
+    res.clearCookie('refresh_token', {
+      maxAge: 0, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // ✅ true in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
+      path: '/',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
+    });
     return res.json({ message: 'Logged out successfully' });
   }
 }
