@@ -17,6 +17,7 @@ export class GuestInterceptor implements NestInterceptor {
     if (!request.user) {
       // Get or create guest ID from cookie
       let guestId = request.cookies?.guestId;
+      console.log('Request:', request);
       console.log('Guest id:', guestId);
 
       if (!guestId) {
