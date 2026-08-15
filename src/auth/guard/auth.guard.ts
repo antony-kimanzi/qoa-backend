@@ -63,6 +63,8 @@ export class AuthGuard implements CanActivate {
     // If no token after refresh attempt and route allows guest, allow access (guest interceptor will handle it)
     if (!token && isGuest) {
       return true;
+    } else if (!token && !isGuest) {
+      throw new UnauthorizedException('Authentication required');
     }
 
     // Verify the token
