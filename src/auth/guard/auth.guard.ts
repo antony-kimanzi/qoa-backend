@@ -44,21 +44,19 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       const refreshToken = this.extractRefreshTokenFromCookies(request);
 
-      if (!refreshToken) {
-        throw new UnauthorizedException('Authentication required');
-      }
+      if (refreshToken) {
+        try {
+          const result = await this.authService.refreshToken(refreshToken);
 
-      try {
-        const result = await this.authService.refreshToken(refreshToken);
+          // Set new tokens in cookies
+          this.setAccessTokenCookie(response, result.access);
+          this.setRefreshTokenCookie(response, result.refresh);
 
-        // Set new tokens in cookies
-        this.setAccessTokenCookie(response, result.access);
-        this.setRefreshTokenCookie(response, result.refresh);
-
-        token = result.access;
-      } catch (error) {
-        console.error('Refresh error:', error);
-        throw new UnauthorizedException('Invalid or expired refresh token');
+          token = result.access;
+        } catch (error) {
+          console.error('Refresh error:', error);
+          throw new UnauthorizedException('Invalid or expired refresh token');
+        }
       }
     }
 
