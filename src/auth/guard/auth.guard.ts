@@ -40,11 +40,6 @@ export class AuthGuard implements CanActivate {
 
     let token = this.extractTokenFromCookies(request);
 
-    // If no token and route allows guest, allow access (guest interceptor will handle it)
-    if (!token && isGuest) {
-      return true;
-    }
-
     // If no access token, try to refresh
     if (!token) {
       const refreshToken = this.extractRefreshTokenFromCookies(request);
@@ -67,13 +62,9 @@ export class AuthGuard implements CanActivate {
       }
     }
 
-    // If still no token after refresh attempt, check for guest
-    if (!token) {
-      const guestId = request?.cookies?.guestId;
-      if (guestId) {
-        return true;
-      }
-      throw new UnauthorizedException('Authentication required');
+    // If no token after refresh attempt and route allows guest, allow access (guest interceptor will handle it)
+    if (!token && isGuest) {
+      return true;
     }
 
     // Verify the token
