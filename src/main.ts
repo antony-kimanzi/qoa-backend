@@ -60,7 +60,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   await app.listen(port, '0.0.0.0');
-  console.log(`Application is running on: http://localhost:${port}/api/v1`);
+  console.log(
+    `Application is running on: https://qoa-backend-production.up.railway.app:${port}/api/v1`,
+  );
   console.log(`Environment: ${env}`);
   console.log(`Allowed origins: ${cleanOrigins.join(', ')}`);
 }
