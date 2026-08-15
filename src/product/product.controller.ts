@@ -28,7 +28,7 @@ export class ProductController {
   }
 
   @Get()
-  @Roles(Role.Admin)
+  @Public()
   async fetchProducts(@Res() res: Response) {
     const result = await this.productService.fetchProducts();
     return res.json({ data: { products: result.products } });
