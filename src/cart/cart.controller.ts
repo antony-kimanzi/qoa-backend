@@ -21,6 +21,7 @@ import { CartItemDto } from './dto';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
 import { GuestInterceptor } from 'src/common/interceptors/guest.interceptor';
+import { Guest } from 'src/common/decorators/guest.decorator';
 
 type AuthenticatedRequest = Request & { user?: User };
 
@@ -29,6 +30,7 @@ export class CartController {
   constructor(private cartService: CartService) {}
 
   @Get('me')
+  @Guest()
   @UseInterceptors(GuestInterceptor)
   async getMyCart(@Req() req: AuthenticatedRequest) {
     const userId = req.user?.id || null;
@@ -55,6 +57,7 @@ export class CartController {
   }
 
   @Post(':id')
+  @Guest()
   @UseInterceptors(GuestInterceptor)
   async addCartItem(
     @Param('id', ParseIntPipe) productId: number,
@@ -69,18 +72,8 @@ export class CartController {
     return res.json({ data: { message: 'Item added successfully' } });
   }
 
-  @Patch(':id')
-  @UseInterceptors(GuestInterceptor)
-  async updateItemQuantity(
-    @Param('id', ParseIntPipe) itemId: number,
-    @Body() dto: CartItemDto,
-    @Res() res: Response,
-  ) {
-    await this.cartService.updateItemQuantity(dto, itemId);
-    return res.json({ data: { message: 'Item updated successfully' } });
-  }
-
-  @Delete('item/:id')
+  @Delete(':id')
+  @Guest()
   @UseInterceptors(GuestInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeCartItem(
@@ -92,6 +85,7 @@ export class CartController {
   }
 
   @Delete()
+  @Guest()
   @UseInterceptors(GuestInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCart(@Res() res: Response, @Req() req: AuthenticatedRequest) {

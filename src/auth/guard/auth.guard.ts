@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
+import { IS_GUEST_KEY } from 'src/common/decorators/guest.decorator';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -31,7 +32,18 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    // Check if route allows guest access
+    const isGuest = this.reflector.getAllAndOverride<boolean>(IS_GUEST_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     let token = this.extractTokenFromCookies(request);
+
+    // If no token and route allows guest, allow access (guest interceptor will handle it)
+    if (!token && isGuest) {
+      return true;
+    }
 
     // // If no access token, try to refresh
     // if (!token) {
