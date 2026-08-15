@@ -45,27 +45,27 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    // // If no access token, try to refresh
-    // if (!token) {
-    //   const refreshToken = this.extractRefreshTokenFromCookies(request);
+    // If no access token, try to refresh
+    if (!token) {
+      const refreshToken = this.extractRefreshTokenFromCookies(request);
 
-    //   if (!refreshToken) {
-    //     throw new UnauthorizedException('Authentication required');
-    //   }
+      if (!refreshToken) {
+        throw new UnauthorizedException('Authentication required');
+      }
 
-    //   try {
-    //     const result = await this.authService.refreshToken(refreshToken);
+      try {
+        const result = await this.authService.refreshToken(refreshToken);
 
-    //     // Set new tokens in cookies
-    //     this.setAccessTokenCookie(response, result.access);
-    //     this.setRefreshTokenCookie(response, result.refresh);
+        // Set new tokens in cookies
+        this.setAccessTokenCookie(response, result.access);
+        this.setRefreshTokenCookie(response, result.refresh);
 
-    //     token = result.access;
-    //   } catch (error) {
-    //     console.error('Refresh error:', error);
-    //     throw new UnauthorizedException('Invalid or expired refresh token');
-    //   }
-    // }
+        token = result.access;
+      } catch (error) {
+        console.error('Refresh error:', error);
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+    }
 
     // If still no token after refresh attempt, check for guest
     if (!token) {
