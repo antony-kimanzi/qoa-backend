@@ -72,6 +72,20 @@ export class CartController {
     return res.json({ data: { message: 'Item added successfully' } });
   }
 
+  @Patch(':id')
+  @Guest()
+  @UseInterceptors(GuestInterceptor)
+  async updateQuantity(
+    @Param('id', ParseIntPipe) itemId: number,
+    @Body() dto: CartItemDto,
+    @Res() res: Response,
+  ) {
+    await this.cartService.updateItemQuantity(dto, itemId);
+    return res.json({
+      data: { message: 'Item quantity updated successfully' },
+    });
+  }
+
   @Delete(':id')
   @Guest()
   @UseInterceptors(GuestInterceptor)
