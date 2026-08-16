@@ -11,6 +11,10 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { Public } from '../common/decorators';
 import { GuestInterceptor } from 'src/common/interceptors/guest.interceptor';
+import {
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+} from 'src/common/config/cookie.config';
 
 @Controller('auth')
 @UseInterceptors(GuestInterceptor)
@@ -27,25 +31,9 @@ export class AuthController {
     const guestId = req.cookies?.guestId;
     const result = await this.authService.register(dto, guestId);
 
-    res.cookie('access_token', result.access, {
-      maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    res.cookie('access_token', result.access, getAccessTokenCookieOptions());
 
-    res.cookie('refresh_token', result.refresh, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    res.cookie('refresh_token', result.refresh, getRefreshTokenCookieOptions());
 
     return res.json({
       data: { user: result.user },
@@ -57,25 +45,9 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Res() res: Response) {
     const result = await this.authService.login(dto);
 
-    res.cookie('access_token', result.access, {
-      maxAge: 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    res.cookie('access_token', result.access, getAccessTokenCookieOptions());
 
-    res.cookie('refresh_token', result.refresh, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    res.cookie('refresh_token', result.refresh, getRefreshTokenCookieOptions());
 
     return res.json({
       data: { user: result.user },
@@ -85,24 +57,8 @@ export class AuthController {
   @Post('logout')
   @Public()
   logout(@Res() res: Response) {
-    res.clearCookie('access_token', {
-      maxAge: 0, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
-    res.clearCookie('refresh_token', {
-      maxAge: 0, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    res.clearCookie('access_token', getAccessTokenCookieOptions());
+    res.clearCookie('refresh_token', getRefreshTokenCookieOptions());
     return res.json({ message: 'Logged out successfully' });
   }
 }

@@ -10,6 +10,10 @@ import { Request, Response } from 'express';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
 import { IS_GUEST_KEY } from 'src/common/decorators/guest.decorator';
 import { AuthService } from '../auth.service';
+import {
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+} from 'src/common/config/cookie.config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -98,32 +102,11 @@ export class AuthGuard implements CanActivate {
     return request?.cookies?.refresh_token;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-  }
-
   private setAccessTokenCookie(response: Response, token: string): void {
-    response.cookie('access_token', token, {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    response.cookie('access_token', token, getAccessTokenCookieOptions());
   }
 
   private setRefreshTokenCookie(response: Response, token: string): void {
-    response.cookie('refresh_token', token, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ✅ true in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production' ? '.railway.app' : 'localhost',
-    });
+    response.cookie('refresh_token', token, getRefreshTokenCookieOptions());
   }
 }

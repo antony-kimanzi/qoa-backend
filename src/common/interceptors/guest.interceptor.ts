@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { getGuestCookieOptions } from '../config/cookie.config';
 
 @Injectable()
 export class GuestInterceptor implements NestInterceptor {
@@ -24,17 +25,7 @@ export class GuestInterceptor implements NestInterceptor {
         guestId = `guest_${uuidv4()}`;
         // Set cookie for 7 days
         const response = context.switchToHttp().getResponse();
-        response.cookie('guestId', guestId, {
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production', // ✅ true in production
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ critical for cross-origin
-          path: '/',
-          domain:
-            process.env.NODE_ENV === 'production'
-              ? '.railway.app'
-              : 'localhost',
-        });
+        response.cookie('guestId', guestId, getGuestCookieOptions());
       }
 
       request.headers['x-guest-id'] = guestId;
