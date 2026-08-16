@@ -53,7 +53,7 @@ async function bootstrap() {
       'X-Requested-With',
       'Cookie',
     ],
-    exposedHeaders: ['Set-Cookie', 'Authorization'],
+    exposedHeaders: ['Set-Cookie', 'Authorization', 'Cookie'],
     maxAge: 86400,
   });
 
